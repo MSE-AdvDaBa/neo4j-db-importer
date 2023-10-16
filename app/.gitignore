@@ -31,8 +31,17 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+.idea/
+
 ### VS Code ###
 .vscode/
 
 ### Mac OS ###
 .DS_Store
+
+# dataset
+dblpv13.json
+
+# docker mnt
+neo4j_mount
+sanitized.json

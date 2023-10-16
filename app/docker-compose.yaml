@@ -1,0 +1,40 @@
+services:
+  db:
+    image: neo4j:5.12.0-community
+    depends_on:
+      - app
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./neo4j_mount/data:/data
+      - ./neo4j_mount/logs:/logs
+      - ./neo4j_mount/conf:/conf
+      - ./neo4j_mount/plugins:/plugins
+    environment:
+      - NEO4J_server_memory_heap_max__size=1.5G
+      - NEO4J_server_memory_pagecache_size=1.5G
+      - NEO4J_AUTH=neo4j/testtest
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_PLUGINS=\[\"apoc\"\]
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+
+  app:
+    image: neo4jtp:latest
+    depends_on:
+      - db
+    volumes:
+      - ./dblpv13.json:/dblpv13.json
+    environment:
+      - JSON_FILE=/sanitized.json
+      - MAX_NODES=50000
+      - NEO4J_IP=db
+    deploy:
+      resources:
+        limits:
+          memory: 4g
