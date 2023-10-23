@@ -1,4 +1,5 @@
 package mse.advdaba;
+
 import org.neo4j.driver.*;
 
 import java.io.BufferedReader;
@@ -64,8 +65,8 @@ public class Main {
         System.out.println("Inserting articles");
         session.run("""
                 CALL apoc.periodic.iterate(
-                    "LOAD CSV WITH HEADERS FROM 'file:///csv/articles.csv' as line FIELDTERMINATOR '§' return line",
-                    "WITH line, apoc.convert.fromJsonList(line.cites) as cites CREATE(:Article {_id:line._id,title:line.title,cites:cites})",
+                    "LOAD JSON FROM 'file:///json/articles.json' as line return line",
+                    "WITH line, line.cites as cites CREATE(:Article {_id:line._id,title:line.title,cites:cites})",
                     {batchSize:50,parallel:false}
                 )
                 """);
@@ -74,8 +75,8 @@ public class Main {
 
         session.run("""
                 CALL apoc.periodic.iterate(
-                    "LOAD CSV WITH HEADERS FROM 'file:///csv/authors.csv' as line FIELDTERMINATOR '§' return line",
-                    "WITH line, apoc.convert.fromJsonList(line.authored) as authored CREATE(:Author {_id:line._id,name:line.name,authored:authored})",
+                    "LOAD JSON FROM 'file:///json/authors.json' as line return line",
+                    "WITH line, line.authored as authored CREATE(:Author {_id:line._id,name:line.name,authored:authored})",
                     {batchSize:50,parallel:false}
                 )
                 """);
