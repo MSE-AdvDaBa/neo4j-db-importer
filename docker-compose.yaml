@@ -1,8 +1,6 @@
 services:
   db:
     image: neo4j:5.12.0-community
-    depends_on:
-      - app
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -29,7 +27,8 @@ services:
     depends_on:
       - db
     volumes:
-      - ./dblpv13.json:/dblpv13.json
+      - ./dblpExample.json:/dblpExample.json
+      # - ./dblpv13.json:/dblpv13.json
     environment:
       - JSON_FILE=/sanitized.json
       - MAX_NODES=50000

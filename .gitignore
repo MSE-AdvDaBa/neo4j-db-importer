@@ -212,3 +212,6 @@ buildNumber.properties
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,macos,intellij,visualstudiocode
+
+dblpv13.json
+neo4j_mount
