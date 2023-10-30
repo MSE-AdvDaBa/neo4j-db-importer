@@ -214,4 +214,6 @@ buildNumber.properties
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,macos,intellij,visualstudiocode
 
 dblpv13.json
+sanitized.json
 neo4j_mount
+json/

@@ -2,9 +2,6 @@ package mse.advdaba;
 
 import org.neo4j.driver.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 public class Main {
@@ -24,13 +21,19 @@ public class Main {
 
         Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "testtest"));
         boolean connected = false;
+        System.out.println("Trying to connect to db");
         do {
             try {
-                System.out.println("Trying to connect to db");
                 driver.verifyConnectivity();
                 connected = true;
             } catch (Exception e) {
-                System.out.println("Failed to connect to db, retrying");
+                System.out.println("Failed to connect to db, retrying in 5 seconds");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException interruptedException) {
+                    System.out.println("Interrupted");
+                    System.exit(0);
+                }
             }
         } while (!connected);
         System.out.println("Connected to db");
@@ -41,6 +44,9 @@ public class Main {
             tx.commit();
             tx = session.beginTransaction();
             tx.run("create constraint article_id IF NOT EXISTS for (a:Article) REQUIRE a._id is UNIQUE");
+            tx.commit();
+            tx = session.beginTransaction();
+            tx.run("create constraint author_id IF NOT EXISTS for (a:Author) REQUIRE a._id is UNIQUE");
             tx.commit();
         }
         try (Session session = driver.session()) {
@@ -54,43 +60,43 @@ public class Main {
         driver.close();
         System.out.println("Driver closed successfully");
         System.out.println("Finished in " + elapsed() + " seconds");
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted");
+                System.exit(0);
+            }
+        }
     }
 
-    public static void readFile(String jsonPath, Session session) throws IOException {
-        FileReader fr = new FileReader(jsonPath);
-        BufferedReader br = new BufferedReader(fr);
-        Map<String, List<String>> authors = new HashMap<>();
-        int crtNode = 0;
+    public static void readFile(String jsonPath, Session session) {
 
-        System.out.println("Inserting articles");
-        session.run("""
-                CALL apoc.periodic.iterate(
-                    "LOAD JSON FROM 'file:///json/articles.json' as line return line",
-                    "WITH line, line.cites as cites CREATE(:Article {_id:line._id,title:line.title,cites:cites})",
-                    {batchSize:50,parallel:false}
-                )
-                """);
-
-        System.out.println("Inserting authors");
+        System.out.println("Inserting articles and authors of articles from jsonPath");
 
         session.run("""
+                PROFILE
                 CALL apoc.periodic.iterate(
-                    "LOAD JSON FROM 'file:///json/authors.json' as line return line",
-                    "WITH line, line.authored as authored CREATE(:Author {_id:line._id,name:line.name,authored:authored})",
-                    {batchSize:50,parallel:false}
+                    "CALL apoc.load.jsonArray($jsonPath) YIELD value RETURN value",
+                    "UNWIND value as article
+                    WITH article
+                    ORDER BY article.year DESC
+                    LIMIT $maxNodes
+                    UNWIND article.authors as author
+                    WITH article, author WHERE author._id IS NOT NULL
+                    MERGE (a:Author {_id:author._id})
+                    ON CREATE SET a.name = author.name
+                    MERGE (b:Article {_id:article._id})
+                    ON CREATE SET b.title = article.title, b.year = article.year
+                    MERGE (a)-[:AUTHORED]->(b)",
+                    {batchSize:50,parallel:false, params:{jsonPath:$jsonPath, maxNodes:$maxNodes}}
                 )
-                """);
-        System.out.println("Creating links between authors and articles");
+                """, Map.of("jsonPath", jsonPath, "maxNodes", MAX_NODES));
 
-        session.run("""
-                CALL apoc.periodic.iterate(
-                    "MATCH(a:Author) RETURN a",
-                    "UNWIND a.authored as authored MATCH(b:Article {_id:authored}) MERGE(a)-[:AUTHORED]->(b) REMOVE a.authored",
-                    {batchSize:50,parallel:false}
-                )
-                """);
         System.out.println("Creating citations link");
+
         session.run("""
+                PROFILE
                 CALL apoc.periodic.iterate(
                 "MATCH(a:Article) return a",
                 "UNWIND a.cites as quote MERGE(b:Article {_id:quote}) CREATE(a)-[:CITES]->(b) REMOVE a.cites",
