@@ -149,14 +149,7 @@
     "url": [
       "http://dx.doi.org/10.1109/ICDAR.1993.395663"
     ],
-    "abstract": "",
-    "references": [
-      "53e99cf5b7602d97025ace63",
-      "557e8a7a6fee0fe990caa63d",
-      "53e9a96cb7602d97032c459a",
-      "53e9b929b7602d9704515791",
-      "557e59ebf6678c77ea222447"
-    ]
+    "abstract": ""
   },
   {
     "_id": "53e99784b7602d9701f3e15d",
@@ -244,18 +237,7 @@
       "http://dx.doi.org/10.1109/ISCAS.2005.1465124",
       "http://ieeexplore.ieee.org/xpl/abstractAuthors.jsp?tp=&arnumber=1465124"
     ],
-    "abstract": "As process variations become a significant problem in deep sub-micron technology, a shift from deterministic static timing analysis to statistical static timing analysis for high-performance circuit designs could reduce the excessive conservatism that is built into current timing design methods. We address the timing yield problem for sequential circuits and propose a statistical approach to handle it. We consider the spatial and path reconvergence correlations between path delays, set-up time and hold time constraints, and clock skew due to process variations. We propose a method to get the timing yield based on the delay distributions of register-to-register paths in the circuit On average, the timing yield results obtained by our approach have average errors of less than 1.0% in comparison with Monte Carlo simulation. Experimental results show that shortest path variations and clock skew due to process variations have considerable impact on circuit timing, which could bias the timing yield results. In addition, the correlation between longest and shortest path delays is not significant.",
-    "references": [
-      "53e9a8a9b7602d97031f6bb9",
-      "599c7b6b601a182cd27360da",
-      "53e9b443b7602d9703f3e52b",
-      "53e9a6a6b7602d9702fdc57e",
-      "599c7b6a601a182cd2735703",
-      "53e9aad9b7602d970345afea",
-      "5582821f0cf2bf7bae57ac18",
-      "5e8911859fced0a24bb9a2ba",
-      "53e9b002b7602d9703a5c932"
-    ]
+    "abstract": "As process variations become a significant problem in deep sub-micron technology, a shift from deterministic static timing analysis to statistical static timing analysis for high-performance circuit designs could reduce the excessive conservatism that is built into current timing design methods. We address the timing yield problem for sequential circuits and propose a statistical approach to handle it. We consider the spatial and path reconvergence correlations between path delays, set-up time and hold time constraints, and clock skew due to process variations. We propose a method to get the timing yield based on the delay distributions of register-to-register paths in the circuit On average, the timing yield results obtained by our approach have average errors of less than 1.0% in comparison with Monte Carlo simulation. Experimental results show that shortest path variations and clock skew due to process variations have considerable impact on circuit timing, which could bias the timing yield results. In addition, the correlation between longest and shortest path delays is not significant."
   },
   {
     "_id": "53e99784b7602d9701f3e161",
@@ -1313,18 +1295,7 @@
       "http://doi.ieeecomputersociety.org/10.1109/CMPSAC.2002.1044548",
       "http://ieeexplore.ieee.org/xpl/abstractAuthors.jsp?tp=&arnumber=1044548"
     ],
-    "abstract": "The eXtensible Markup Language 驴 XML 驴 is not only a language for communication between humans and the web, it is also a language for communication between programs. Rather than passing parameters, programs can pass documents from one to another, containing not only pure data, but control information as well. Even legacy programs written in ancient languages such as COBOL and PL/I can be adapted by means ofinterface reengineering to process and to generate XML documents.",
-    "references": [
-      "53e9adbdb7602d97037be8a2",
-      "53e9bb53b7602d9704792f33",
-      "558aa425e4b0b32fcb37fff4",
-      "558abd44e4b031bae1f9653a",
-      "53e9a326b7602d9702c32229",
-      "53e9b1d7b7602d9703c6ce7c",
-      "558a7de784ae84d265bdee99",
-      "53e9ae17b7602d9703828d13",
-      "53e9aa4fb7602d97033bf9ad"
-    ]
+    "abstract": "The eXtensible Markup Language 驴 XML 驴 is not only a language for communication between humans and the web, it is also a language for communication between programs. Rather than passing parameters, programs can pass documents from one to another, containing not only pure data, but control information as well. Even legacy programs written in ancient languages such as COBOL and PL/I can be adapted by means ofinterface reengineering to process and to generate XML documents."
   },
   {
     "_id": "53e99784b7602d9701f3f414",
@@ -1573,17 +1544,7 @@
       "http://link.springer.com/article/10.1007/s11704-011-0127-6",
       "http://www.webofknowledge.com/"
     ],
-    "abstract": "Resource allocation for multi-tier web applications in virtualization environments is one of the most important problems in autonomous computing. On one hand, the more resources that are provisioned to a multitier web application, the easier it is to meet service level objectives (SLO). On the other hand, the virtual machine which hosts the multi-tier web application needs to be consolidated as much as possible in order to maintain high resource utilization. This paper presents an adaptive resource controller which consists of a feedback utilization controller and an auto-regressive and moving average model (ARMA)-based model estimator. It can meet application-level quality of service (QoS) goals while achieving high resource utilization. To evaluate the proposed controllers, simulations are performed on a testbed simulating a virtual data center using Xen virtual machines. Experimental results indicate that the controllers can improve CPU utilization and make the best tradeoff between resource utilization and performance for multi-tier web applications.",
-    "references": [
-      "53e9a073b7602d9702957efa",
-      "53e9ad87b7602d970377bfb5",
-      "53e9be51b7602d9704b11381",
-      "53e9be04b7602d9704abb31d",
-      "53e9992bb7602d9702169236",
-      "53e998cdb7602d97021044db",
-      "53e9afa6b7602d97039f6054",
-      "53e99822b7602d9702044e60"
-    ]
+    "abstract": "Resource allocation for multi-tier web applications in virtualization environments is one of the most important problems in autonomous computing. On one hand, the more resources that are provisioned to a multitier web application, the easier it is to meet service level objectives (SLO). On the other hand, the virtual machine which hosts the multi-tier web application needs to be consolidated as much as possible in order to maintain high resource utilization. This paper presents an adaptive resource controller which consists of a feedback utilization controller and an auto-regressive and moving average model (ARMA)-based model estimator. It can meet application-level quality of service (QoS) goals while achieving high resource utilization. To evaluate the proposed controllers, simulations are performed on a testbed simulating a virtual data center using Xen virtual machines. Experimental results indicate that the controllers can improve CPU utilization and make the best tradeoff between resource utilization and performance for multi-tier web applications."
   },
   {
     "_id": "53e99784b7602d9701f3f600",
@@ -3176,47 +3137,7 @@
       "https://www.sciencedirect.com/science/article/pii/S0169023X08001316",
       "http://www.webofknowledge.com/"
     ],
-    "abstract": "Mobile online analytical processing (mOLAP) encompasses all necessary technologies for information systems that enable OLAP data access to users carrying a mobile device. This paper presents FCLOS, a complete client–server architecture explicitly designed for mOLAP. FCLOS founds on intelligent scheduling and compressed transmissions in order to become a query efficient, self-adaptive and scalable mOLAP information system. Scheduling exploits derivability between data cubes in order to group related queries and eventually reduce the necessary transmissions (broadcasts). Compression is achieved by the m-Dwarf, a novel, compressed data cube physical structure, which has no loss of semantic information and is explicitly designed for mobile applications. The superiority of FCLOS against state of the art systems is shown both experimentally and analytically.",
-    "references": [
-      "53e99ee0b7602d97027ae130",
-      "53e9aca7b7602d9703681f1f",
-      "53e9b9c0b7602d97045b36b4",
-      "53e9b856b7602d970441929a",
-      "53e9af75b7602d97039bbc74",
-      "53e9bb23b7602d970475dcba",
-      "53e9be50b7602d9704b0d16a",
-      "53e9aa73b7602d97033eaa4f",
-      "5c75065ef56def9798571484",
-      "53e9b5ceb7602d9704116fc0",
-      "5c778b5c4895d9cbc6207427",
-      "53e9a1b6b7602d9702aabd1a",
-      "53e99938b7602d9702177541",
-      "53e9ac8fb7602d9703665d27",
-      "53e9adf6b7602d97037fe3be",
-      "53e99aacb7602d97023282d0",
-      "53e9b083b7602d9703aef34d",
-      "53e9ab49b7602d97034ddabd",
-      "53e9af1fb7602d970395c460",
-      "53e9b627b7602d9704180664",
-      "53e9a8b7b7602d9703204a2f",
-      "53e99a2bb7602d9702284a25",
-      "53e9a52cb7602d9702e502fe",
-      "53e9ae05b7602d970381159d",
-      "53e9a7c0b7602d97030fc0bf",
-      "53e9baadb7602d97046dd52d",
-      "53e9aa48b7602d97033b7a3c",
-      "53e9a59bb7602d9702ec4247",
-      "53e99fafb7602d9702886829",
-      "53e9ae17b7602d9703825532",
-      "53e9bd11b7602d9704996cd3",
-      "53e9b732b7602d97042c7a86",
-      "53e9a3c1b7602d9702cd3a50",
-      "53e999c3b7602d9702204e50",
-      "53e99a98b7602d9702312bda",
-      "53e9a9a2b7602d9703300778",
-      "53e9ad26b7602d970370942b",
-      "53e9bddbb7602d9704a8dc8f"
-    ]
+    "abstract": "Mobile online analytical processing (mOLAP) encompasses all necessary technologies for information systems that enable OLAP data access to users carrying a mobile device. This paper presents FCLOS, a complete client–server architecture explicitly designed for mOLAP. FCLOS founds on intelligent scheduling and compressed transmissions in order to become a query efficient, self-adaptive and scalable mOLAP information system. Scheduling exploits derivability between data cubes in order to group related queries and eventually reduce the necessary transmissions (broadcasts). Compression is achieved by the m-Dwarf, a novel, compressed data cube physical structure, which has no loss of semantic information and is explicitly designed for mobile applications. The superiority of FCLOS against state of the art systems is shown both experimentally and analytically."
   },
   {
     "_id": "53e99784b7602d9701f3f95e",
@@ -3864,5 +3785,167 @@
     "doi": "",
     "pdf": "",
     "abstract": ""
+  },
+  {
+    "_id" : "53e9b655b7602d97041b4e87",
+    "title" : "Proportional fair scheduling for multi-cell multi-user MIMO systems",
+    "authors" : [
+      {
+        "_id" : "53f4374cdabfaedd74da8858",
+        "name" : "Lingjia Liu"
+      },
+      {
+        "_id" : "53f47f9fdabfaec09f29d3e1",
+        "name" : "Young-Han Nam"
+      },
+      {
+        "_id" : "5609feee45cedb3396ffe933",
+        "name" : "Jianzhong Zhang"
+      }
+    ],
+    "venue" : {
+      "_id" : "555037b87cea80f954197126",
+      "name_d" : "Conference on Information Sciences and Systems",
+      "type" : NumberInt(0),
+      "raw" : "CISS"
+    },
+    "year" : NumberInt(2010),
+    "keywords" : [
+      "multi-cell multi-user mimo",
+      "diversity reception",
+      "radiofrequency interference",
+      "wireless communication system",
+      "cellular radio",
+      "intracell interference",
+      "wireless channels",
+      "system-level simulation",
+      "proportional fair scheduling",
+      "multiuser diversity",
+      "mimo communication",
+      "proportional fairness",
+      "intercell interference",
+      "imt-advanced",
+      "lte-advanced system parameter",
+      "multicell multiuser mimo system",
+      "tin",
+      "ofdm",
+      "downlink",
+      "mimo",
+      "interference",
+      "base stations",
+      "measurement",
+      "throughput",
+      "imt advanced",
+      "wireless communication",
+      "proportional fair",
+      "scheduling algorithm",
+      "telecommunications"
+    ],
+    "fos" : [
+      "System-level simulation",
+      "Multi-user MIMO",
+      "Fair-share scheduling",
+      "Scheduling (computing)",
+      "Computer science",
+      "MIMO",
+      "Computer network",
+      "Maximum throughput scheduling",
+      "Throughput",
+      "Computer engineering",
+      "Proportionally fair"
+    ],
+    "n_citation" : NumberInt(39),
+    "page_start" : "1",
+    "page_end" : "6E",
+    "lang" : "en",
+    "volume" : "",
+    "issue" : "",
+    "issn" : "",
+    "isbn" : "978-1-4244-7417-2",
+    "doi" : "10.1109/CISS.2010.5464834",
+    "pdf" : null,
+    "url" : [
+      "http://dx.doi.org/10.1109/CISS.2010.5464834",
+      "http://ieeexplore.ieee.org/xpl/abstractAuthors.jsp?tp=&arnumber=5464834"
+    ],
+    "abstract" : "In this paper, a multi-cell multi-user MIMO scheme with advanced user pairing and scheduling algorithm is proposed to effectively explore multi-user diversity and to combat both intra-cell and inter-cell interference in the downlink of wireless communication systems. The optimality of the proposed user paring and scheduling algorithm is shown under generalized proportional fair metrics. System-level simulations are conducted to verify the performance of the proposed scheme with the agreed LTE-Advanced (LTE-A) system parameters. The results suggest the proposed scheme is a promising candidate for improving both the cell-edge user throughput and average cell throughput, and furthermore for fulfilling the IMT-Advanced (IMT-A) requirements.",
+    "references" : [
+      "558add93e4b0b32fcb395650"
+    ]
+  },
+  {
+    "_id" : "558add93e4b0b32fcb395650",
+    "title" : "A Leakage-Based Precoding Scheme for Downlink Multi-User MIMO Channels",
+    "authors" : [
+      {
+        "_id" : "53f431d0dabfaee02ac99129",
+        "name" : "Sadek, M.",
+        "org" : "Dept. of Electr. Eng., California Univ., Los Angeles, CA|c|",
+        "gid" : "5b86946fe1cd8e14a365ce45",
+        "orgid" : "5f71b59b1c455f439fe51fba"
+      },
+      {
+        "_id" : "53f45163dabfaee2a1d60665",
+        "name" : "Tarighat, A."
+      },
+      {
+        "_id" : "5405f8fadabfae91d302262b",
+        "name" : "Sayed, A.H."
+      }
+    ],
+    "venue" : {
+      "_id" : "548261ae582fc50b5e240dd1",
+      "type" : NumberInt(0),
+      "raw" : "IEEE Transactions on Wireless Communications"
+    },
+    "year" : NumberInt(2007),
+    "keywords" : [
+      "MIMO communication",
+      "channel coding",
+      "channel estimation",
+      "cochannel interference",
+      "interference suppression",
+      "matrix algebra",
+      "precoding",
+      "radio links",
+      "wireless channels",
+      "Alamouti coding",
+      "SLNR",
+      "channel estimation errors",
+      "cochannel interference suppression",
+      "downlink multi-user MIMO channels",
+      "leakage-based precoding scheme",
+      "multiuser MIMO downlink communications",
+      "signal-to-leakage-and-noise ratio",
+      "zero-forcing solutions"
+    ],
+    "fos" : [
+      "3G MIMO",
+      "Multi-user MIMO",
+      "Computer science",
+      "Control theory",
+      "MIMO",
+      "Communication channel",
+      "Electronic engineering",
+      "Interference (wave propagation)",
+      "Zero-forcing precoding",
+      "Precoding",
+      "Telecommunications link"
+    ],
+    "n_citation" : NumberInt(780),
+    "page_start" : "1711",
+    "page_end" : "1721",
+    "lang" : "en",
+    "volume" : "6",
+    "issue" : "5",
+    "issn" : "1536-1276",
+    "isbn" : "",
+    "doi" : "10.1109/TWC.2007.360373",
+    "pdf" : "",
+    "url" : [
+      "http://ieeexplore.ieee.org/xpl/abstractAuthors.jsp?tp=&arnumber=4202177",
+      "http://dx.doi.org/10.1109/TWC.2007.360373"
+    ],
+    "abstract" : "In multiuser MIMO downlink communications, it is necessary to design precoding schemes that are able to suppress co-channel interference. This paper proposes designing precoders by maximizing the so-called signal-to-leakage-and-noise ratio (SLNR) for all users simultaneously. The presentation considers communications with both single- and multi-stream cases, as well as MIMO systems that employ Alamouti coding. The effect of channel estimation errors on system performance is also studied. Compared with zero-forcing solutions, the proposed method does not impose a condition on the relation between the number of transmit and receive antennas, and it also avoids noise enhancement. Simulations illustrate the performance of the scheme"
   }
 ]

@@ -72,7 +72,7 @@ public class Main {
 
     public static void readFile(String jsonPath, Session session) {
 
-        System.out.println("Inserting articles and authors of articles from jsonPath");
+        System.out.println("Creating authors");
 
         session.run("""
                 PROFILE
@@ -80,27 +80,48 @@ public class Main {
                     "CALL apoc.load.jsonArray($jsonPath) YIELD value RETURN value",
                     "UNWIND value as article
                     WITH article
-                    ORDER BY article.year DESC
                     LIMIT $maxNodes
                     UNWIND article.authors as author
-                    WITH article, author WHERE author._id IS NOT NULL
+                    WITH author WHERE author._id IS NOT NULL
                     MERGE (a:Author {_id:author._id})
-                    ON CREATE SET a.name = author.name
-                    MERGE (b:Article {_id:article._id})
-                    ON CREATE SET b.title = article.title, b.year = article.year
-                    MERGE (a)-[:AUTHORED]->(b)",
+                    ON CREATE SET a.name = author.name",
                     {batchSize:50,parallel:false, params:{jsonPath:$jsonPath, maxNodes:$maxNodes}}
                 )
                 """, Map.of("jsonPath", jsonPath, "maxNodes", MAX_NODES));
+
+        System.out.println("Creating articles");
+
+        session.run("""
+                PROFILE
+                CALL apoc.periodic.iterate(
+                    "CALL apoc.load.jsonArray($jsonPath) YIELD value RETURN value",
+                    "UNWIND value as article
+                    WITH article
+                    LIMIT $maxNodes
+                    CREATE (b:Article {_id:article._id, title:article.title, year:article.year, references:article.references, authors:article.authors})",
+                    {batchSize:50,parallel:false, params:{jsonPath:$jsonPath, maxNodes:$maxNodes}}
+                )
+                """, Map.of("jsonPath", jsonPath, "maxNodes", MAX_NODES));
+
+        System.out.println("Creating authorship link");
+
+        session.run("""
+                PROFILE
+                CALL apoc.periodic.iterate(
+                    "MATCH(article:Article) RETURN article",
+                    "UNWIND article.authors as author MERGE (a:Author {_id:author._id}) CREATE (a)-[:AUTHORED]->(article) REMOVE article.authors",
+                    {batchSize:50,parallel:false}
+                )
+                """);
 
         System.out.println("Creating citations link");
 
         session.run("""
                 PROFILE
                 CALL apoc.periodic.iterate(
-                "MATCH(a:Article) return a",
-                "UNWIND a.cites as quote MERGE(b:Article {_id:quote}) CREATE(a)-[:CITES]->(b) REMOVE a.cites",
-                {batchSize:50,parallel:false}
+                    "MATCH(a:Article) return a",
+                    "UNWIND a.references as quote MERGE(b:Article {_id:quote}) CREATE(a)-[:CITES]->(b) REMOVE a.references",
+                    {batchSize:50,parallel:false}
                 )
                 """);
 
