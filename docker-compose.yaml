@@ -33,7 +33,7 @@ services:
       # - ./dblpv13.json:/dblpv13.json
       - ./json:/json
     environment:
-      - JSON_FILE=/import/sanitized2.json
+      - JSON_FILE=/json/sanitized.json
       - MAX_NODES=50000
       - NEO4J_IP=db
     deploy:

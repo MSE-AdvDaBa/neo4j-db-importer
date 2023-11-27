@@ -1,7 +1,11 @@
 package mse.advdaba;
 
+import com.google.gson.stream.JsonReader;
+
 import org.neo4j.driver.*;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 public class Main {
@@ -27,7 +31,7 @@ public class Main {
                 driver.verifyConnectivity();
                 connected = true;
             } catch (Exception e) {
-                System.out.println("Failed to connect to db, retrying in 5 seconds");
+                System.out.println("Failed to connect to db, retrying in 2 seconds");
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException interruptedException) {
@@ -72,60 +76,67 @@ public class Main {
 
     public static void readFile(String jsonPath, Session session) {
 
-        System.out.println("Creating authors");
+        // Read JSON file and store it in a Map using Gson library
+        Map<String, Object> map = null;
+        JsonReader reader = null;
+        try {
+            reader = new JsonReader(new FileReader(jsonPath));
+            reader.beginArray();
+            map = new HashMap<>();
+            int i = 0;
+            int inserted = 0;
+            System.out.println("Creating articles");
+            while (reader.hasNext()) {
+                if (i >= MAX_NODES) {
+                    System.out.println("Inserting articles " + inserted + " to " + (inserted + MAX_NODES));
+                    insertArticles(map, session);
+                    inserted += MAX_NODES;
+                    map = new HashMap<>();
+                    i = 0;
+                } else {
+                    reader.beginObject();
+                    HashMap<String, Object> objectMap = new HashMap<>();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        switch (name) {
+                            case "_id":
+                                objectMap.put("_id", reader.nextString());
+                                break;
+                            case "title":
+                                objectMap.put("title", sanitize(reader.nextString()));
+                                break;
+                            case "year":
+                                objectMap.put("year", reader.nextInt());
+                                break;
+                            default:
+                                reader.skipValue();
+                                break;
+                        }
+                    }
+                    map.put(objectMap.get("_id").toString(), objectMap);
+                    reader.endObject();
+                    i++;
+                }
+            }
+            System.out.println("Inserting articles " + inserted + " to " + (inserted + i));
+            insertArticles(map, session);
+            reader.endArray();
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("Failed to read file");
+            System.out.println(e.getMessage());
+            System.exit(1);
+        }
+        System.out.println("Finished creating articles");
+    }
 
-        session.run("""
-                PROFILE
-                CALL apoc.periodic.iterate(
-                    "CALL apoc.load.jsonArray($jsonPath) YIELD value RETURN value",
-                    "UNWIND value as article
-                    WITH article
-                    LIMIT $maxNodes
-                    UNWIND article.authors as author
-                    WITH author WHERE author._id IS NOT NULL
-                    MERGE (a:Author {_id:author._id})
-                    ON CREATE SET a.name = author.name",
-                    {batchSize:50,parallel:false, params:{jsonPath:$jsonPath, maxNodes:$maxNodes}}
-                )
-                """, Map.of("jsonPath", jsonPath, "maxNodes", MAX_NODES));
-
-        System.out.println("Creating articles");
-
-        session.run("""
-                PROFILE
-                CALL apoc.periodic.iterate(
-                    "CALL apoc.load.jsonArray($jsonPath) YIELD value RETURN value",
-                    "UNWIND value as article
-                    WITH article
-                    LIMIT $maxNodes
-                    CREATE (b:Article {_id:article._id, title:article.title, year:article.year, references:article.references, authors:article.authors})",
-                    {batchSize:50,parallel:false, params:{jsonPath:$jsonPath, maxNodes:$maxNodes}}
-                )
-                """, Map.of("jsonPath", jsonPath, "maxNodes", MAX_NODES));
-
-        System.out.println("Creating authorship link");
-
-        session.run("""
-                PROFILE
-                CALL apoc.periodic.iterate(
-                    "MATCH(article:Article) RETURN article",
-                    "UNWIND article.authors as author MERGE (a:Author {_id:author._id}) CREATE (a)-[:AUTHORED]->(article) REMOVE article.authors",
-                    {batchSize:50,parallel:false}
-                )
-                """);
-
-        System.out.println("Creating citations link");
-
-        session.run("""
-                PROFILE
-                CALL apoc.periodic.iterate(
-                    "MATCH(a:Article) return a",
-                    "UNWIND a.references as quote MERGE(b:Article {_id:quote}) CREATE(a)-[:CITES]->(b) REMOVE a.references",
-                    {batchSize:50,parallel:false}
-                )
-                """);
-
-        System.out.println("Waiting for pending operations to finish");
+    public static void insertArticles(Map<String, Object> map, Session session) {
+        System.out.println("Inserting articles");
+        Transaction tx = session.beginTransaction();
+        Map<String, Object> params = new HashMap<>();
+        params.put("props", map.values());
+        tx.run("UNWIND $props AS map MERGE (a:Article {_id: map._id}) SET a.title = map.title, a.year = map.year", params);
+        tx.commit();
     }
 
     public static String sanitize(String input) {
