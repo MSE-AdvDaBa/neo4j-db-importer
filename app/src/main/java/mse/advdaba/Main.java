@@ -54,7 +54,8 @@ public class Main {
             tx.commit();
         }
         try (Session session = driver.session()) {
-            readFile(jsonPath, session);
+            readFileForEntities(jsonPath, session);
+            readFileForCitations(jsonPath, session);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println("Failed to read file, shutting down");
@@ -74,9 +75,7 @@ public class Main {
         }
     }
 
-    public static void readFile(String jsonPath, Session session) {
-
-        // Read JSON file and store it in a Map using Gson library
+    public static void readFileForEntities(String jsonPath, Session session) {
         Map<String, Object> mapOfArticles = null;
         Map<String, Object> mapOfAuthors = null;
         JsonReader reader = null;
@@ -160,6 +159,84 @@ public class Main {
         System.out.println("Finished creating articles");
     }
 
+    public static void readFileForCitations(String jsonPath, Session session) {
+        Map<String, ArrayList<String>> mapOfArticleAuthors = null;
+        Map<String, ArrayList<String>> mapOfArticleReferences = null;
+        JsonReader reader = null;
+        try {
+            reader = new JsonReader(new FileReader(jsonPath));
+            reader.beginArray();
+            mapOfArticleAuthors = new HashMap<>();
+            mapOfArticleReferences = new HashMap<>();
+            int i = 0;
+            System.out.println("Creating citations");
+            while (reader.hasNext()) {
+                if (i >= MAX_NODES) {
+                    insertCitations(mapOfArticleAuthors, mapOfArticleReferences, session);
+                    mapOfArticleAuthors = new HashMap<>();
+                    mapOfArticleReferences = new HashMap<>();
+                    i = 0;
+                } else {
+                    reader.beginObject();
+                    HashMap<String, Object> articleMap = new HashMap<>();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        switch (name) {
+                            case "_id":
+                                articleMap.put("_id", reader.nextString());
+                                break;
+                            case "authors":
+                                reader.beginArray();
+                                while (reader.hasNext()) {
+                                    reader.beginObject();
+                                    ArrayList<String> authors = new ArrayList<>();
+                                    while (reader.hasNext()) {
+                                        String authorName = reader.nextName();
+                                        if (authorName.equals("_id")) {
+                                            authors.add(reader.nextString());
+                                        } else {
+                                            reader.skipValue();
+                                        }
+                                    }
+                                    // remove null values from arraylist
+                                    authors.removeAll(Collections.singleton(null));
+                                    mapOfArticleAuthors.put(articleMap.get("_id").toString(), authors);
+                                    reader.endObject();
+                                    i++;
+                                }
+                                reader.endArray();
+                                break;
+                            case "references":
+                                ArrayList<String> references = new ArrayList<>();
+                                reader.beginArray();
+                                while (reader.hasNext()) {
+                                    String referenceId = reader.nextString();
+                                    references.add(referenceId);
+                                    i++;
+                                }
+                                reader.endArray();
+                                mapOfArticleReferences.put(articleMap.get("_id").toString(), references);
+                                break;
+                            default:
+                                reader.skipValue();
+                                break;
+                        }
+                    }
+                    reader.endObject();
+                    i++;
+                }
+            }
+            insertCitations(mapOfArticleAuthors, mapOfArticleReferences, session);
+            reader.endArray();
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("Failed to read file");
+            System.out.println(e.getMessage());
+            System.exit(1);
+        }
+        System.out.println("Finished creating citations");
+    }
+
     public static void insertArticles(Map<String, Object> map, Session session) {
         System.out.println("Inserting " + map.size() + " articles");
         Transaction tx = session.beginTransaction();
@@ -175,6 +252,27 @@ public class Main {
         Map<String, Object> params = new HashMap<>();
         params.put("props", map.values());
         tx.run("UNWIND $props AS map MERGE (a:Author {_id: map._id}) SET a.name = map.name", params);
+        tx.commit();
+    }
+
+    public static void insertCitations(Map<String, ArrayList<String>> mapOfArticleAuthors, Map<String, ArrayList<String>> mapOfArticleReferences, Session session) {
+        int amountOfCitations = mapOfArticleAuthors.size() + mapOfArticleReferences.size();
+        System.out.println("Inserting " + amountOfCitations + " citations");
+        Transaction tx = session.beginTransaction();
+        for (Map.Entry<String, ArrayList<String>> entry : mapOfArticleAuthors.entrySet()) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", entry.getKey());
+            params.put("authors", entry.getValue());
+            tx.run("MATCH (a:Article {_id: $id}) UNWIND $authors AS author MERGE (b:Author {_id: author}) CREATE (b)-[:AUTHORED]->(a)", params);
+        }
+        tx.commit();
+        tx = session.beginTransaction();
+        for (Map.Entry<String, ArrayList<String>> entry : mapOfArticleReferences.entrySet()) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", entry.getKey());
+            params.put("references", entry.getValue());
+            tx.run("MATCH (a:Article {_id: $id}) UNWIND $references AS reference MERGE (b:Article {_id: reference}) CREATE (a)-[:CITES]->(b)", params);
+        }
         tx.commit();
     }
 

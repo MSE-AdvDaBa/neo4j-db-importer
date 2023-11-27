@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j-db-importer-deployment
+  namespace: pet-via-adv-da-ba23
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: neo4j-db-importer
+  template:
+    metadata:
+      labels:
+        app: neo4j-db-importer
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: JSON_FILE
+              value: /json/sanitized.json
+            - name: MAX_NODES
+              value: "50000"
+            - name: NEO4J_IP
+              value: db-service
+          image: ghcr.io/mse-advdaba/neo4j-db-importer:latest
+          imagePullPolicy: Always
+          # limit the memory usage of the app container to 4GB
+          resources:
+            limits:
+              memory: "4Gi"
+          volumeMounts:
+            - mountPath: /json
+              name: db-pvc
+        - name: db
+          env:
+            - name: NEO4J_dbms_memory_heap_max__size
+              value: 1.5G
+            - name: NEO4J_dbms_memory_pagecache_size
+              value: 1.5G
+            - name: NEO4J_AUTH
+              value: neo4j/testtest
+          image: neo4j:5.12.0-community
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 7474
+              name: http
+              protocol: TCP
+            - containerPort: 7687
+              name: bolt
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /json
+              name: db-pvc
+      volumes:
+        - name: db-pvc
+          persistentVolumeClaim:
+            claimName: db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  namespace: pet-via-adv-da-ba23
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 7474
+    - name: bolt
+      port: 7687
+      targetPort: 7687
+  selector:
+    app: neo4j-db-importer
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: neo4j-db-importer
+  name: db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 35Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: db-ingress
+  namespace: pet-via-adv-da-ba23
+spec:
+  rules:
+    - host: neo4j-db-importer.kube.isc.heia-fr.ch
+      http:
+        paths:
+          - backend:
+              service:
+                name: db-service
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - neo4j-db-importer.kube.isc.heia-fr.ch

@@ -30,7 +30,7 @@ services:
     image: neo4jtp:latest
     volumes:
       # - ./dblpExample.json:/dblpExample.json
-      # - ./dblpv13.json:/dblpv13.json
+      - ./dblpv13.json:/dblpv13.json
       - ./json:/json
     environment:
       - JSON_FILE=/json/sanitized.json
