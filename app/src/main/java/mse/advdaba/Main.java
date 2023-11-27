@@ -77,49 +77,79 @@ public class Main {
     public static void readFile(String jsonPath, Session session) {
 
         // Read JSON file and store it in a Map using Gson library
-        Map<String, Object> map = null;
+        Map<String, Object> mapOfArticles = null;
+        Map<String, Object> mapOfAuthors = null;
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(jsonPath));
             reader.beginArray();
-            map = new HashMap<>();
+            mapOfArticles = new HashMap<>();
+            mapOfAuthors = new HashMap<>();
             int i = 0;
-            int inserted = 0;
-            System.out.println("Creating articles");
+            System.out.println("Creating articles and authors");
             while (reader.hasNext()) {
                 if (i >= MAX_NODES) {
-                    System.out.println("Inserting articles " + inserted + " to " + (inserted + MAX_NODES));
-                    insertArticles(map, session);
-                    inserted += MAX_NODES;
-                    map = new HashMap<>();
+                    insertArticles(mapOfArticles, session);
+                    insertAuthors(mapOfAuthors, session);
+                    mapOfArticles = new HashMap<>();
+                    mapOfAuthors = new HashMap<>();
                     i = 0;
                 } else {
                     reader.beginObject();
-                    HashMap<String, Object> objectMap = new HashMap<>();
+                    HashMap<String, Object> articleMap = new HashMap<>();
                     while (reader.hasNext()) {
                         String name = reader.nextName();
                         switch (name) {
                             case "_id":
-                                objectMap.put("_id", reader.nextString());
+                                articleMap.put("_id", reader.nextString());
                                 break;
                             case "title":
-                                objectMap.put("title", sanitize(reader.nextString()));
+                                articleMap.put("title", sanitize(reader.nextString()));
                                 break;
                             case "year":
-                                objectMap.put("year", reader.nextInt());
+                                articleMap.put("year", reader.nextInt());
+                                break;
+                            case "authors":
+                                reader.beginArray();
+                                while (reader.hasNext()) {
+                                    reader.beginObject();
+                                    HashMap<String, Object> authorMap = new HashMap<>();
+                                    while (reader.hasNext()) {
+                                        String authorName = reader.nextName();
+                                        switch (authorName) {
+                                            case "_id":
+                                                authorMap.put("_id", reader.nextString());
+                                                break;
+                                            case "name":
+                                                authorMap.put("name", sanitize(reader.nextString()));
+                                                break;
+                                            default:
+                                                reader.skipValue();
+                                                break;
+                                        }
+                                    }
+                                    if (authorMap.get("_id") == null) {
+                                        reader.endObject();
+                                        continue;
+                                    }
+                                    mapOfAuthors.put(authorMap.get("_id").toString(), authorMap);
+                                    reader.endObject();
+                                    i++;
+                                }
+                                reader.endArray();
                                 break;
                             default:
                                 reader.skipValue();
                                 break;
                         }
                     }
-                    map.put(objectMap.get("_id").toString(), objectMap);
+                    mapOfArticles.put(articleMap.get("_id").toString(), articleMap);
                     reader.endObject();
                     i++;
                 }
             }
-            System.out.println("Inserting articles " + inserted + " to " + (inserted + i));
-            insertArticles(map, session);
+            insertArticles(mapOfArticles, session);
+            insertAuthors(mapOfAuthors, session);
             reader.endArray();
             reader.close();
         } catch (IOException e) {
@@ -131,11 +161,20 @@ public class Main {
     }
 
     public static void insertArticles(Map<String, Object> map, Session session) {
-        System.out.println("Inserting articles");
+        System.out.println("Inserting " + map.size() + " articles");
         Transaction tx = session.beginTransaction();
         Map<String, Object> params = new HashMap<>();
         params.put("props", map.values());
         tx.run("UNWIND $props AS map MERGE (a:Article {_id: map._id}) SET a.title = map.title, a.year = map.year", params);
+        tx.commit();
+    }
+
+    public static void insertAuthors(Map<String, Object> map, Session session) {
+        System.out.println("Inserting " + map.size() + " authors");
+        Transaction tx = session.beginTransaction();
+        Map<String, Object> params = new HashMap<>();
+        params.put("props", map.values());
+        tx.run("UNWIND $props AS map MERGE (a:Author {_id: map._id}) SET a.name = map.name", params);
         tx.commit();
     }
 
