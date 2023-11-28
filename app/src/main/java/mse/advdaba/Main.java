@@ -23,7 +23,7 @@ public class Main {
         String neo4jIP = System.getenv("NEO4J_IP");
         System.out.println("IP address of neo4j server is " + neo4jIP);
 
-        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "testtest"));
+        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":80", AuthTokens.basic("neo4j", "testtest"));
         boolean connected = false;
         System.out.println("Trying to connect to db");
         do {

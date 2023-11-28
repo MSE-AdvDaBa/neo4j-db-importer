@@ -59,15 +59,26 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: db-service
+  name: web-db-service
   namespace: pet-via-adv-da-ba23
 spec:
   ports:
     - name: http
       port: 80
       targetPort: 7474
+  selector:
+    app: neo4j-db-importer
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  namespace: pet-via-adv-da-ba23
+spec:
+  ports:
     - name: bolt
-      port: 7687
+      port: 80
       targetPort: 7687
   selector:
     app: neo4j-db-importer
@@ -98,6 +109,16 @@ spec:
         paths:
           - backend:
               service:
+                name: web-db-service
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+    - host: database-neo4j-db-importer.kube.isc.heia-fr.ch
+      http:
+        paths:
+          - backend:
+              service:
                 name: db-service
                 port:
                   number: 80
@@ -105,4 +126,4 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
-        - neo4j-db-importer.kube.isc.heia-fr.ch
+        - database-neo4j-db-importer.kube.isc.heia-fr.ch
