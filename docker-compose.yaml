@@ -6,21 +6,10 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
-    volumes:
-      - ./neo4j_mount/data:/data
-      - ./neo4j_mount/logs:/logs
-      - ./neo4j_mount/conf:/conf
-      - ./neo4j_mount/plugins:/plugins
-      # fix for first launch
-      - ./json:/var/lib/neo4j/import
     environment:
       - NEO4J_server_memory_heap_max__size=1.5G
       - NEO4J_server_memory_pagecache_size=1.5G
       - NEO4J_AUTH=neo4j/testtest
-      - NEO4J_apoc_export_file_enabled=true
-      - NEO4J_apoc_import_file_enabled=true
-      - NEO4J_apoc_import_file_use__neo4j__config=true
-      - NEO4J_PLUGINS=\[\"apoc\"\]
     deploy:
       resources:
         limits:
@@ -28,12 +17,8 @@ services:
 
   app:
     image: neo4jtp:latest
-    volumes:
-      # - ./dblpExample.json:/dblpExample.json
-      - ./dblpv13.json:/dblpv13.json
-      - ./json:/json
     environment:
-      - JSON_FILE=/json/sanitized.json
+      - JSON_URL=http://vmrum.isc.heia-fr.ch/biggertest.json
       - MAX_NODES=50000
       - NEO4J_IP=db
     deploy:

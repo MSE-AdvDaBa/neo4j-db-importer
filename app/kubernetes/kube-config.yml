@@ -16,8 +16,8 @@ spec:
       containers:
         - name: app
           env:
-            - name: JSON_FILE
-              value: /json/sanitized.json
+            - name: JSON_URL
+              value: http://vmrum.isc.heia-fr.ch/dblpv13.json
             - name: MAX_NODES
               value: "50000"
             - name: NEO4J_IP
@@ -28,9 +28,6 @@ spec:
           resources:
             limits:
               memory: "4Gi"
-          volumeMounts:
-            - mountPath: /json
-              name: db-pvc
         - name: db
           env:
             - name: NEO4J_dbms_memory_heap_max__size
@@ -48,13 +45,6 @@ spec:
             - containerPort: 7687
               name: bolt
               protocol: TCP
-          volumeMounts:
-            - mountPath: /json
-              name: db-pvc
-      volumes:
-        - name: db-pvc
-          persistentVolumeClaim:
-            claimName: db-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -83,19 +73,6 @@ spec:
   selector:
     app: neo4j-db-importer
   type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: neo4j-db-importer
-  name: db-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 35Gi
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -126,4 +103,5 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
+        - neo4j-db-importer.kube.isc.heia-fr.ch
         - database-neo4j-db-importer.kube.isc.heia-fr.ch

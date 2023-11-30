@@ -4,8 +4,12 @@ import com.google.gson.stream.JsonReader;
 
 import org.neo4j.driver.*;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Main {
@@ -17,13 +21,13 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        String jsonPath = System.getenv("JSON_FILE");
-        System.out.println("Path to JSON file is " + jsonPath);
+        String jsonPath = System.getenv("JSON_URL");
+        System.out.println("URL to JSON file is " + jsonPath);
         System.out.println("Number of articles to consider is " + MAX_NODES);
         String neo4jIP = System.getenv("NEO4J_IP");
         System.out.println("IP address of neo4j server is " + neo4jIP);
 
-        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":80", AuthTokens.basic("neo4j", "testtest"));
+        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "testtest"));
         boolean connected = false;
         System.out.println("Trying to connect to db");
         do {
@@ -75,12 +79,13 @@ public class Main {
         }
     }
 
-    public static void readFileForEntities(String jsonPath, Session session) {
+    public static void readFileForEntities(String jsonPath, Session session) throws MalformedURLException {
         Map<String, Object> mapOfArticles = null;
         Map<String, Object> mapOfAuthors = null;
+        URL url = new URL(jsonPath);
         JsonReader reader = null;
         try {
-            reader = new JsonReader(new FileReader(jsonPath));
+            reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
             reader.beginArray();
             mapOfArticles = new HashMap<>();
             mapOfAuthors = new HashMap<>();
@@ -159,12 +164,13 @@ public class Main {
         System.out.println("Finished creating articles");
     }
 
-    public static void readFileForCitations(String jsonPath, Session session) {
+    public static void readFileForCitations(String jsonPath, Session session) throws MalformedURLException {
         Map<String, ArrayList<String>> mapOfArticleAuthors = null;
         Map<String, ArrayList<String>> mapOfArticleReferences = null;
+        URL url = new URL(jsonPath);
         JsonReader reader = null;
         try {
-            reader = new JsonReader(new FileReader(jsonPath));
+            reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
             reader.beginArray();
             mapOfArticleAuthors = new HashMap<>();
             mapOfArticleReferences = new HashMap<>();
@@ -277,7 +283,9 @@ public class Main {
     }
 
     public static String sanitize(String input) {
-        return input.replace("\\", "\\\\").replace("\"", "\\\"")
+        // run sed -E 's/(NumberInt)\(([0-9]+)(\))/\2/' on the input string
+        String value = input.replaceAll("(NumberInt)\\(([0-9]+)(\\))", "$2");
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
                 .replace("'", "\\'");
     }
 }
