@@ -18,7 +18,7 @@ services:
   app:
     image: neo4jtp:latest
     environment:
-      - JSON_URL=http://vmrum.isc.heia-fr.ch/biggertest.json
+      - JSON_URL=http://vmrum.isc.heia-fr.ch/dblpv13.json
       - MAX_NODES=50000
       - NEO4J_IP=db
     deploy:

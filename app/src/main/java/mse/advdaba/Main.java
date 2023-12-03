@@ -14,10 +14,12 @@ import java.util.*;
 
 public class Main {
     public final static int MAX_NODES = Integer.parseInt(System.getenv("MAX_NODES"));
-    public final static long START = System.currentTimeMillis();
+    public final static Date START = new Date();
 
-    public static double elapsed() {
-        return (double) (System.currentTimeMillis() - START) / 1000d;
+    public static String elapsed() {
+        Date END = new Date();
+        DateTimeUtils dtUtils = new DateTimeUtils();
+        return dtUtils.getDifference(START, END);
     }
 
     public static void main(String[] args) {
@@ -27,7 +29,7 @@ public class Main {
         String neo4jIP = System.getenv("NEO4J_IP");
         System.out.println("IP address of neo4j server is " + neo4jIP);
 
-        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":7687", AuthTokens.basic("neo4j", "testtest"));
+        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":80", AuthTokens.basic("neo4j", "testtest"));
         boolean connected = false;
         System.out.println("Trying to connect to db");
         do {
@@ -68,7 +70,7 @@ public class Main {
 
         driver.close();
         System.out.println("Driver closed successfully");
-        System.out.println("Finished in " + elapsed() + " seconds");
+        System.out.println("Finished in " + elapsed());
         while (true) {
             try {
                 Thread.sleep(1000);
@@ -79,13 +81,15 @@ public class Main {
         }
     }
 
-    public static void readFileForEntities(String jsonPath, Session session) throws MalformedURLException {
+    public static void readFileForEntities(String jsonPath, Session session) {
         Map<String, Object> mapOfArticles = null;
         Map<String, Object> mapOfAuthors = null;
-        URL url = new URL(jsonPath);
+        URL url = null;
         JsonReader reader = null;
         try {
-            reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
+            url = new URL(jsonPath);
+            reader = new CustomJsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
+            reader.setLenient(true);
             reader.beginArray();
             mapOfArticles = new HashMap<>();
             mapOfAuthors = new HashMap<>();
@@ -108,7 +112,7 @@ public class Main {
                                 articleMap.put("_id", reader.nextString());
                                 break;
                             case "title":
-                                articleMap.put("title", sanitize(reader.nextString()));
+                                articleMap.put("title", reader.nextString());
                                 break;
                             case "year":
                                 articleMap.put("year", reader.nextInt());
@@ -125,7 +129,7 @@ public class Main {
                                                 authorMap.put("_id", reader.nextString());
                                                 break;
                                             case "name":
-                                                authorMap.put("name", sanitize(reader.nextString()));
+                                                authorMap.put("name", reader.nextString());
                                                 break;
                                             default:
                                                 reader.skipValue();
@@ -167,10 +171,12 @@ public class Main {
     public static void readFileForCitations(String jsonPath, Session session) throws MalformedURLException {
         Map<String, ArrayList<String>> mapOfArticleAuthors = null;
         Map<String, ArrayList<String>> mapOfArticleReferences = null;
-        URL url = new URL(jsonPath);
+        URL url = null;
         JsonReader reader = null;
         try {
-            reader = new JsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
+            url = new URL(jsonPath);
+            reader = new CustomJsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
+            reader.setLenient(true);
             reader.beginArray();
             mapOfArticleAuthors = new HashMap<>();
             mapOfArticleReferences = new HashMap<>();
@@ -280,12 +286,5 @@ public class Main {
             tx.run("MATCH (a:Article {_id: $id}) UNWIND $references AS reference MERGE (b:Article {_id: reference}) CREATE (a)-[:CITES]->(b)", params);
         }
         tx.commit();
-    }
-
-    public static String sanitize(String input) {
-        // run sed -E 's/(NumberInt)\(([0-9]+)(\))/\2/' on the input string
-        String value = input.replaceAll("(NumberInt)\\(([0-9]+)(\\))", "$2");
-        return value.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("'", "\\'");
     }
 }
