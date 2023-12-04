@@ -17,7 +17,7 @@ spec:
         - name: app
           env:
             - name: JSON_URL
-              value: http://vmrum.isc.heia-fr.ch/dblpv13.json
+              value: http://160.98.47.134/dblpv13.json
             - name: MAX_NODES
               value: "50000"
             - name: NEO4J_IP
@@ -29,7 +29,7 @@ spec:
           # limit the memory usage of the app container to 4GB
           resources:
             limits:
-              memory: "4Gi"
+              memory: "1Gi"
         - name: db
           env:
             - name: NEO4J_dbms_memory_heap_max__size
@@ -47,6 +47,9 @@ spec:
             - containerPort: 7687
               name: bolt
               protocol: TCP
+          resources:
+            limits:
+              memory: "3Gi"
 ---
 apiVersion: v1
 kind: Service
