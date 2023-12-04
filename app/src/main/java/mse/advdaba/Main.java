@@ -2,6 +2,7 @@ package mse.advdaba;
 
 import com.google.gson.stream.JsonReader;
 
+import com.google.gson.stream.JsonToken;
 import org.neo4j.driver.*;
 
 import java.io.IOException;
@@ -28,8 +29,10 @@ public class Main {
         System.out.println("Number of articles to consider is " + MAX_NODES);
         String neo4jIP = System.getenv("NEO4J_IP");
         System.out.println("IP address of neo4j server is " + neo4jIP);
+        String neo4jPort = System.getenv("NEO4J_PORT");
+        System.out.println("Port of neo4j server is " + neo4jPort);
 
-        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":80", AuthTokens.basic("neo4j", "testtest"));
+        Driver driver = GraphDatabase.driver("bolt://" + neo4jIP + ":" + neo4jPort, AuthTokens.basic("neo4j", "testtest"));
         boolean connected = false;
         System.out.println("Trying to connect to db");
         do {
@@ -90,10 +93,10 @@ public class Main {
     }
 
     public static void readFileForEntities(String jsonPath, Session session) {
-        Map<String, Object> mapOfArticles = null;
-        Map<String, Object> mapOfAuthors = null;
-        URL url = null;
-        JsonReader reader = null;
+        Map<String, Object> mapOfArticles;
+        Map<String, Object> mapOfAuthors;
+        URL url;
+        JsonReader reader;
         try {
             url = new URL(jsonPath);
             reader = new CustomJsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
@@ -176,66 +179,65 @@ public class Main {
         System.out.println("Finished creating articles");
     }
 
-    public static void readFileForCitations(String jsonPath, Session session) throws MalformedURLException {
-        Map<String, ArrayList<String>> mapOfArticleAuthors = null;
-        Map<String, ArrayList<String>> mapOfArticleReferences = null;
-        URL url = null;
-        JsonReader reader = null;
+    public static void readFileForCitations(String jsonPath, Session session) {
+        ArrayList<String[]> listOfArticlesAuthors;
+        ArrayList<String[]> listOfArticleReferences;
+        URL url;
+        JsonReader reader;
         try {
             url = new URL(jsonPath);
             reader = new CustomJsonReader(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)));
             reader.setLenient(true);
             reader.beginArray();
-            mapOfArticleAuthors = new HashMap<>();
-            mapOfArticleReferences = new HashMap<>();
+            listOfArticlesAuthors = new ArrayList<>();
+            listOfArticleReferences = new ArrayList<>();
             int i = 0;
             System.out.println("Creating citations");
             while (reader.hasNext()) {
                 if (i >= MAX_NODES) {
-                    insertCitations(mapOfArticleAuthors, mapOfArticleReferences, session);
-                    mapOfArticleAuthors = new HashMap<>();
-                    mapOfArticleReferences = new HashMap<>();
+                    insertCitations(listOfArticlesAuthors, listOfArticleReferences, session);
+                    listOfArticlesAuthors = new ArrayList<>();
+                    listOfArticleReferences = new ArrayList<>();
                     i = 0;
                 } else {
                     reader.beginObject();
-                    HashMap<String, Object> articleMap = new HashMap<>();
+                    String currentId = null;
                     while (reader.hasNext()) {
                         String name = reader.nextName();
                         switch (name) {
                             case "_id":
-                                articleMap.put("_id", reader.nextString());
+                                currentId = reader.nextString();
                                 break;
                             case "authors":
                                 reader.beginArray();
                                 while (reader.hasNext()) {
                                     reader.beginObject();
-                                    ArrayList<String> authors = new ArrayList<>();
                                     while (reader.hasNext()) {
                                         String authorName = reader.nextName();
                                         if (authorName.equals("_id")) {
-                                            authors.add(reader.nextString());
+                                            String authorId = reader.nextString();
+                                            if (authorId == null) {
+                                                reader.endObject();
+                                                continue;
+                                            }
+                                            listOfArticlesAuthors.add(new String[]{currentId, authorId});
                                         } else {
                                             reader.skipValue();
                                         }
                                     }
-                                    // remove null values from arraylist
-                                    authors.removeAll(Collections.singleton(null));
-                                    mapOfArticleAuthors.put(articleMap.get("_id").toString(), authors);
                                     reader.endObject();
                                     i++;
                                 }
                                 reader.endArray();
                                 break;
                             case "references":
-                                ArrayList<String> references = new ArrayList<>();
                                 reader.beginArray();
                                 while (reader.hasNext()) {
                                     String referenceId = reader.nextString();
-                                    references.add(referenceId);
+                                    listOfArticleReferences.add(new String[]{currentId, referenceId});
                                     i++;
                                 }
                                 reader.endArray();
-                                mapOfArticleReferences.put(articleMap.get("_id").toString(), references);
                                 break;
                             default:
                                 reader.skipValue();
@@ -243,10 +245,9 @@ public class Main {
                         }
                     }
                     reader.endObject();
-                    i++;
                 }
             }
-            insertCitations(mapOfArticleAuthors, mapOfArticleReferences, session);
+            insertCitations(listOfArticlesAuthors, listOfArticleReferences, session);
             reader.endArray();
             reader.close();
         } catch (IOException e) {
@@ -275,24 +276,14 @@ public class Main {
         tx.commit();
     }
 
-    public static void insertCitations(Map<String, ArrayList<String>> mapOfArticleAuthors, Map<String, ArrayList<String>> mapOfArticleReferences, Session session) {
-        int amountOfCitations = mapOfArticleAuthors.size() + mapOfArticleReferences.size();
+    public static void insertCitations(ArrayList<String[]> listOfArticlesAuthors, ArrayList<String[]> listOfArticleReferences, Session session) {
+        int amountOfCitations = listOfArticlesAuthors.size() + listOfArticleReferences.size();
         System.out.println("Inserting " + amountOfCitations + " citations");
         Transaction tx = session.beginTransaction();
-        for (Map.Entry<String, ArrayList<String>> entry : mapOfArticleAuthors.entrySet()) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("id", entry.getKey());
-            params.put("authors", entry.getValue());
-            tx.run("MATCH (a:Article {_id: $id}) UNWIND $authors AS author MERGE (b:Author {_id: author}) CREATE (b)-[:AUTHORED]->(a)", params);
-        }
+        tx.run("UNWIND $props AS map MATCH (a:Article {_id: map[0]}), (b:Author {_id: map[1]}) MERGE (a)-[:AUTHORED]->(b)", Collections.singletonMap("props", listOfArticlesAuthors));
         tx.commit();
         tx = session.beginTransaction();
-        for (Map.Entry<String, ArrayList<String>> entry : mapOfArticleReferences.entrySet()) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("id", entry.getKey());
-            params.put("references", entry.getValue());
-            tx.run("MATCH (a:Article {_id: $id}) UNWIND $references AS reference MERGE (b:Article {_id: reference}) CREATE (a)-[:CITES]->(b)", params);
-        }
+        tx.run("UNWIND $props AS map MATCH (a:Article {_id: map[0]}), (b:Article {_id: map[1]}) MERGE (a)-[:CITES]->(b)", Collections.singletonMap("props", listOfArticleReferences));
         tx.commit();
     }
 }

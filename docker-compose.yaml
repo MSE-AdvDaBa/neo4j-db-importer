@@ -21,6 +21,7 @@ services:
       - JSON_URL=http://vmrum.isc.heia-fr.ch/dblpv13.json
       - MAX_NODES=50000
       - NEO4J_IP=db
+      - NEO4J_PORT=7687
     deploy:
       resources:
         limits:

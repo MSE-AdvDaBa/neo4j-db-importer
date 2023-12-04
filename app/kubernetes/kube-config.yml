@@ -22,6 +22,8 @@ spec:
               value: "50000"
             - name: NEO4J_IP
               value: db-service
+            - name: NEO4J_PORT
+              value: "80"
           image: ghcr.io/mse-advdaba/neo4j-db-importer:latest
           imagePullPolicy: Always
           # limit the memory usage of the app container to 4GB
