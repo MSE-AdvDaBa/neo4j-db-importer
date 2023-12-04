@@ -13,7 +13,6 @@ public class DateTimeUtils {
 
         System.out.println("START : " + startDate);
         System.out.println("END : "+ endDate);
-        System.out.println("difference : " + difference);
 
         long secondsInMilli = 1000;
         long minutesInMilli = secondsInMilli * 60;

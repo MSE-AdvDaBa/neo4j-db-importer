@@ -16,10 +16,10 @@ public class Main {
     public final static int MAX_NODES = Integer.parseInt(System.getenv("MAX_NODES"));
     public final static Date START = new Date();
 
-    public static String elapsed() {
+    public static String elapsed(Date start) {
         Date END = new Date();
         DateTimeUtils dtUtils = new DateTimeUtils();
-        return dtUtils.getDifference(START, END);
+        return dtUtils.getDifference(start, END);
     }
 
     public static void main(String[] args) {
@@ -58,19 +58,27 @@ public class Main {
             tx = session.beginTransaction();
             tx.run("create constraint author_id IF NOT EXISTS for (a:Author) REQUIRE a._id is UNIQUE");
             tx.commit();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to delete nodes, shutting down");
+            System.exit(2);
         }
+
         try (Session session = driver.session()) {
+            Date startEntities = new Date();
             readFileForEntities(jsonPath, session);
+            Date startCitations = new Date();
             readFileForCitations(jsonPath, session);
+            driver.close();
+            System.out.println("Driver closed successfully");
+            System.out.println("Finished creating articles and authors in " + elapsed(startEntities));
+            System.out.println("Finished creating citations in " + elapsed(startCitations));
+            System.out.println("Total time elapsed: " + elapsed(START));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println("Failed to read file, shutting down");
             System.exit(2);
         }
-
-        driver.close();
-        System.out.println("Driver closed successfully");
-        System.out.println("Finished in " + elapsed());
         while (true) {
             try {
                 Thread.sleep(1000);
